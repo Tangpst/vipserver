@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的邀请名单</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #FDF7FF;
+            margin: 0;
+            padding: 16px;
+            font-family: 'Roboto', sans-serif;
+            color: #1C1B1F;
+        }
+
+        /* 顶部总览卡片 */
+        .hero-card {
+            background: linear-gradient(135deg, #673AB7, #512DA8);
+            border-radius: 16px;
+            padding: 24px;
+            color: white;
+            box-shadow: 0 4px 8px rgba(103, 58, 183, 0.2);
+            margin-bottom: 24px; /* 增加底部间距 */
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .avatar {
+            width: 48px;
+            height: 48px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 12px;
+            font-size: 20px;
+        }
+        .money-display {
+            font-size: 42px;
+            font-weight: bold;
+        }
+
+        /* 列表区域 */
+        .list-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            padding-left: 4px;
+        }
+        .list-container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid #F0F0F0;
+        }
+        .item-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #EADDFF;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 16px;
+            color: #673AB7;
+        }
+        .money-plus {
+            color: #673AB7;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        /* 这里的 CSS 用于移除最后一个列表项的底边框，细节体验更好 */
+        .list-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero-card">
+        <div class="user-info">
+            <div class="avatar">陈</div>
+            <div>
+                <div style="font-size: 18px; font-weight: 500;">陈大明</div>
+                <div style="font-size: 14px; opacity: 0.8;">138****1234</div>
+            </div>
+        </div>
+        <div>
+            <div style="font-size: 14px; opacity: 0.8; margin-bottom: 4px;">累计已赚权益金 (元)</div>
+            <div class="money-display">¥ 1,250.00</div>
+        </div>
+    </div>
+
+    <div class="list-title">邀请名单</div>
+    
+    <div class="list-container">
+        <div class="list-item">
+            <div style="display: flex; align-items: center;">
+                <div class="item-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor"><path d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-120v-32q0-34 17.5-62.5T224-258q65-32 130-47t126-15q62 0 126.5 15.5T736-258q30 22 47 50.5T800-152v32H160Z"/></svg>
+                </div>
+                <div>
+                    <div style="font-weight: 500;">李小四</div>
+                    <div style="font-size: 13px; color: #79747E;">2023-10-27 14:30</div>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <div class="money-plus">+ ¥50.00</div>
+                <div style="font-size: 12px; color: #79747E;">已到账</div>
+            </div>
+        </div>
+
+        <div class="list-item">
+            <div style="display: flex; align-items: center;">
+                <div class="item-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor"><path d="M480-480q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47ZM160-120v-32q0-34 17.5-62.5T224-258q65-32 130-47t126-15q62 0 126.5 15.5T736-258q30 22 47 50.5T800-152v32H160Z"/></svg>
+                </div>
+                <div>
+                    <div style="font-weight: 500;">王五</div>
+                    <div style="font-size: 13px; color: #79747E;">2023-10-26 09:15</div>
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <div class="money-plus">+ ¥30.00</div>
+                <div style="font-size: 12px; color: #79747E;">已到账</div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
