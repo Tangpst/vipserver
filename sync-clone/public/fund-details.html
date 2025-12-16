@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>权益金明细</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #FDF7FF;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            color: #1C1B1F;
+        }
+
+        /* 1. 顶部导航栏 */
+        .app-bar {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background-color: #FDF7FF;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            padding: 8px;
+            margin-left: -8px;
+            cursor: pointer;
+            color: #1C1B1F;
+            display: flex;
+            align-items: center;
+        }
+        .page-title {
+            font-size: 20px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        /* 2. 列表容器 */
+        .list-container {
+            padding: 8px 16px;
+            min-height: 200px;
+        }
+        
+        /* 列表项样式 */
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #F0F0F0;
+        }
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        /* 左侧：图标和信息 */
+        .item-left {
+            display: flex;
+            align-items: flex-start;
+            flex: 1;
+            overflow: hidden; 
+        }
+        
+        /* 图标容器 */
+        .icon-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #F5F5F5; /* 默认浅灰 (支出用) */
+            color: #757575;            /* 默认深灰 (支出用) */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+        
+        /* 收入图标高亮 (浅紫背景+深紫图标) */
+        .icon-box.income {
+            background-color: #EADDFF;
+            color: #673AB7;
+        }
+        
+        /* 支出图标高亮 (浅红背景+深红图标 - 可选，如果希望图标也变红可以启用下面这行) */
+        .icon-box.expense { background-color: #FFEBEE; color: #D32F2F; } 
+
+        /* 中间文字信息 */
+        .info-box {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+            gap: 2px; 
+        }
+
+        .item-type {
+            font-size: 16px;
+            font-weight: 500;
+            /* 默认颜色移除，改由具体类控制 */
+        }
+        /* 【修改】收入名称颜色：紫罗兰 */
+        .item-type.income {
+            color: #673AB7;
+        }
+        /* 【修改】支出名称颜色：红色 */
+        .item-type.expense {
+            color: #D32F2F;
+        }
+
+        /* 辅助信息 */
+        .item-meta {
+            font-size: 12px;
+            color: #79747E;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .item-remark {
+            font-size: 12px;
+            color: #9E9E9E; 
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .item-date {
+            font-size: 12px;
+            color: #9E9E9E;
+        }
+
+        /* 右侧金额 */
+        .item-right {
+            text-align: right;
+            margin-left: 12px;
+            min-width: 80px;
+        }
+        .amount {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        /* 【修改】收入金额颜色：紫罗兰 */
+        .amount.plus { color: #673AB7; }
+        /* 【修改】支出金额颜色：红色 */
+        .amount.minus { color: #D32F2F; }
+        
+        .loading-text {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-bar">
+        <button class="back-btn" onclick="history.back()">
+            <span class="material-icons-round">arrow_back</span>
+        </button>
+        <span class="page-title">权益金明细</span>
+    </div>
+
+    <div class="list-container" id="listContainer">
+        <div class="loading-text">正在加载数据...</div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentPhone = urlParams.get('phone');
+
+        window.onload = function() {
+            if (!currentPhone) {
+                document.getElementById('listContainer').innerHTML = '<div class="loading-text">缺少手机号参数</div>';
+                return;
+            }
+            fetchData();
+        };
+
+        async function fetchData() {
+            try {
+                const res = await fetch(`/api/fund-details?phone=${currentPhone}`);
+                const json = await res.json();
+                
+                let list = [];
+                if (json.data && json.data.result) {
+                    list = json.data.result;
+                }
+                renderList(list);
+            } catch (error) {
+                console.error(error);
+                document.getElementById('listContainer').innerHTML = '<div class="loading-text">加载失败，请重试</div>';
+            }
+        }
+
+        function getIconByType(type) {
+            if (!type) return 'receipt';
+            if (type.includes('提现')) return 'payments';
+            if (type.includes('充值')) return 'account_balance_wallet';
+            if (type.includes('消费')) return 'shopping_bag';
+            if (type.includes('邀')) return 'person_add';
+            return 'receipt'; 
+        }
+
+        function renderList(data) {
+            const container = document.getElementById('listContainer');
+            
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div class="loading-text">暂无明细记录</div>';
+                return;
+            }
+
+            let html = '';
+
+            data.forEach(item => {
+                const type = item.类型 || '未知类型';
+                const amount = Number(item.金额 || 0);
+                const date = item.日期 || ''; 
+                
+                // 判断是否为支出
+                const isExpense = ['提现', '转充值'].includes(type);
+                
+                // 设置符号和类名
+                const sign = isExpense ? '-' : '+';
+                
+                // 【核心修改逻辑】
+                // 1. 如果是支出 -> 样式全是 expense (红)
+                // 2. 如果是收入 -> 样式全是 income (紫)
+                const styleClass = isExpense ? 'expense' : 'income'; // 用于文字颜色
+                const amountClass = isExpense ? 'minus' : 'plus';    // 用于金额颜色
+                const iconClass = isExpense ? '' : 'income';         // 图标背景保持现状(收入紫底，支出灰底)
+
+                // --- 处理副标题和备注 ---
+                let metaHtmlParts = [];
+                let contributorStr = '';
+                if (item.被邀请人) {
+                    if (Array.isArray(item.被邀请人)) {
+                        const validItems = item.被邀请人.filter(s => s && typeof s === 'string' && s.trim() !== '');
+                        if (validItems.length > 0) contributorStr = validItems.join(', ');
+                    } else if (typeof item.被邀请人 === 'string' && item.被邀请人.trim() !== '') {
+                        contributorStr = item.被邀请人;
+                    }
+                }
+                if (contributorStr) {
+                    metaHtmlParts.push(`<div class="item-meta">贡献人: ${contributorStr}</div>`);
+                }
+                if (item.备注 && typeof item.备注 === 'string' && item.备注.trim() !== '') {
+                    metaHtmlParts.push(`<div class="item-remark">${item.备注}</div>`);
+                }
+                if (metaHtmlParts.length === 0 && item.数据来源) {
+                    metaHtmlParts.push(`<div class="item-meta">${item.数据来源}</div>`);
+                }
+                const metaInfoHtml = metaHtmlParts.join('');
+
+                // --- 组装 HTML ---
+                html += `
+                    <div class="transaction-item">
+                        <div class="item-left">
+                            <div class="icon-box ${iconClass}">
+                                <span class="material-icons-round">${getIconByType(type)}</span>
+                            </div>
+                            <div class="info-box">
+                                <div class="item-type ${styleClass}">${type}</div>
+                                ${metaInfoHtml} 
+                                <div class="item-date">${date}</div>
+                            </div>
+                        </div>
+                        <div class="item-right">
+                            <div class="amount ${amountClass}">${sign} ${amount.toFixed(2)}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

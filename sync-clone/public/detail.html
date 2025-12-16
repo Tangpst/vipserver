@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>奖励明细</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #FDF7FF;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            color: #1C1B1F;
+        }
+
+        /* 1. 顶部导航栏 */
+        .app-bar {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background-color: #FDF7FF;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .back-btn {
+            background: none;
+            border: none;
+            padding: 8px;
+            margin-left: -8px;
+            cursor: pointer;
+            color: #1C1B1F;
+            display: flex;
+            align-items: center;
+        }
+        .page-title {
+            font-size: 20px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        /* 2. 个人摘要卡片 */
+        .summary-container {
+            padding: 0 16px 16px 16px;
+        }
+        .summary-card {
+            background-color: #EADDFF;
+            border-radius: 16px;
+            padding: 24px;
+            color: #21005D;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .person-info h2 {
+            margin: 0 0 4px 0;
+            font-size: 22px;
+        }
+        .person-info p {
+            margin: 0;
+            font-size: 13px;
+            opacity: 0.8;
+            line-height: 1.5;
+        }
+        .total-badge {
+            text-align: right;
+        }
+        .total-amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #673AB7;
+        }
+        .total-label {
+            font-size: 12px;
+            color: #673AB7;
+        }
+
+        /* 3. 流水列表 */
+        .list-section {
+            background-color: white;
+            border-radius: 24px 24px 0 0;
+            padding: 24px 16px;
+            min-height: 60vh;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #49454F;
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 24px;
+            position: relative;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 19px;
+            top: 36px;
+            bottom: -28px;
+            width: 2px;
+            background-color: #F0F0F0;
+        }
+        .timeline-item:last-child::before {
+            display: none;
+        }
+
+        .icon-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #F3EDF7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #673AB7;
+            margin-right: 16px;
+            z-index: 1;
+            flex-shrink: 0;
+        }
+        
+        .content-box {
+            flex: 1;
+            padding-bottom: 4px;
+        }
+        
+        .row-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .record-type {
+            font-weight: 500;
+            font-size: 16px;
+        }
+        .record-amount {
+            font-weight: 600;
+            color: #673AB7;
+            font-size: 16px;
+        }
+        
+        .row-bottom {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #79747E;
+        }
+
+        .loading-text {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-bar">
+        <button class="back-btn" onclick="history.back()">
+            <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="currentColor"><path d="M400-80 0-480l400-400 71 71-329 329 329 329-71 71Z"/></svg>
+        </button>
+        <span class="page-title">奖励明细</span>
+    </div>
+
+    <div class="summary-container">
+        <div class="summary-card">
+            <div class="person-info">
+                <h2 id="userName">加载中...</h2>
+                <p id="userPhone">...</p>
+            </div>
+            <div class="total-badge">
+                <div class="total-amount" id="totalAmount">0.00</div>
+                <div class="total-label">该用户贡献</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="list-section">
+        <div class="section-title">收益记录</div>
+        
+        <div id="recordListContainer">
+            <div class="loading-text">正在加载明细...</div>
+        </div>
+    </div>
+
+    <script>
+        // 1. 从 URL 获取被查询人的手机号
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetPhone = urlParams.get('phone');
+
+        window.onload = function() {
+            if (!targetPhone) {
+                alert('未找到手机号参数');
+                return;
+            }
+            fetchDetailData();
+        };
+
+        async function fetchDetailData() {
+            try {
+                // 2. 调用 API，注意 mode=member_fund
+                // URL 示例: /api/user-info?phone=16200000000&mode=member_fund
+                const res = await fetch(`/api/user-info?phone=${targetPhone}&mode=member_fund`);
+                const json = await res.json();
+
+                console.log('明细数据:', json);
+
+                // 解析数据路径: data -> result -> data
+                let records = [];
+                if (json.data && json.data.result && json.data.result.data) {
+                    records = json.data.result.data;
+                }
+
+                renderDetail(records);
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('recordListContainer').innerHTML = '<div class="loading-text">加载失败</div>';
+            }
+        }
+
+        function renderDetail(list) {
+            const container = document.getElementById('recordListContainer');
+            
+            if (!list || list.length === 0) {
+                container.innerHTML = '<div class="loading-text">暂无明细记录</div>';
+                document.getElementById('userName').innerText = '未命名';
+                document.getElementById('userPhone').innerText = targetPhone;
+                return;
+            }
+
+            // --- A. 渲染顶部汇总卡片 ---
+            
+            // 取第一条记录里的 "被邀请人姓名" (注意是数组)
+            const firstItemFields = list[0].fields;
+            const name = (firstItemFields['被邀请人姓名'] && firstItemFields['被邀请人姓名'][0]) || '未知用户';
+            
+            // 计算总金额 (遍历所有记录累加)
+            let total = 0;
+            list.forEach(item => {
+                const amount = Number(item.fields['金额']) || 0;
+                total += amount;
+            });
+
+            // 填充 DOM
+            document.getElementById('userName').innerText = name;
+            document.getElementById('userPhone').innerText = targetPhone;
+            document.getElementById('totalAmount').innerText = '⭐ ' + total.toFixed(2);
+
+
+            // --- B. 渲染列表 ---
+
+            let html = '';
+            
+            list.forEach(item => {
+                const f = item.fields;
+                
+                const type = f['类型'] || '未知奖励';
+                const amount = Number(f['金额'] || 0).toFixed(2);
+                const date = f['日期'] || ''; // 格式如 2025/12/16 13:47:00
+
+                // 根据类型显示不同图标 (可选)
+                let iconSvg = '';
+                if (type.includes('首邀')) {
+                    // 首邀图标 (礼物)
+                    iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor"><path d="M200-120q-33 0-56.5-23.5T120-200v-320h-40v-80h244q-9-15-12.5-31t-3.5-34q0-54 36-89.5T432-790q39 0 71 20.5t49 53.5q17-33 49-53.5t71-20.5q54 0 90 35.5T798-665q0 18-3.5 34T782-600h218v80h-40v320q0 33-23.5 56.5T680-120H200Zm0-80h480v-320H200v320Zm182-400h-90q-19 0-32-12.5T247-646q0-20 13-33.5t32-13.5q33 0 54 22t36 71Zm196 0q15-49 36-71t54-22q19 0 32 13.5t13 33.5q0 21-13 33.5T668-600h-90ZM200-200v-320 320Z"/></svg>';
+                } else {
+                    // 默认图标 (钱袋/返利)
+                    iconSvg = '<svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor"><path d="M280-80q-33 0-56.5-23.5T200-160q0-33 23.5-56.5T280-240q33 0 56.5 23.5T360-160q0 33-23.5 56.5T280-80Zm400 0q-33 0-56.5-23.5T600-160q0-33 23.5-56.5T680-240q33 0 56.5 23.5T760-160q0 33-23.5 56.5T680-80ZM246-720l96 200h280l110-200H246Zm-38-80h590q23 0 35 20.5t1 41.5L692-402q-11 20-29.5 31T622-360H324l-44 80h480v80H280q-45 0-68-39.5t-2-78.5l54-98-144-304H40v-80h130l38 80Zm134 280h280-280Z"/></svg>';
+                }
+
+                html += `
+                <div class="timeline-item">
+                    <div class="icon-box">
+                        ${iconSvg}
+                    </div>
+                    <div class="content-box">
+                        <div class="row-top">
+                            <span class="record-type">${type}</span>
+                            <span class="record-amount">+ ${amount}</span>
+                        </div>
+                        <div class="row-bottom">
+                            <span>${date}</span>
+                            <span>已到账</span>
+                        </div>
+                    </div>
+                </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

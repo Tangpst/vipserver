@@ -6,48 +6,64 @@ resources:
     component: fc3
     props:
       region: cn-hangzhou
+      description: ''
+      functionName: vip_server
+      # 这是一个占位符，Custom Runtime 实际上看 command
+      handler: index.handler 
+      timeout: 60
+      memorySize: 512
       cpu: 0.35
+      diskSize: 512
+      instanceConcurrency: 20
+      instanceIsolationMode: SHARE
+      internetAccess: true
+      runtime: custom.debian10
+      
+      # 【修正1】代码路径建议使用相对路径
+      # 这里的逻辑是：s.yaml 在 sync-clone 文件夹下，代码在子文件夹里
+      code: ./
+      
       customRuntimeConfig:
         command:
           - npm
           - run
           - start
         port: 9000
-      description: ''
-      disableOndemand: false
-      diskSize: 512
-     
+
+      layers:
+        - acs:fc:cn-hangzhou:1128326595609724:layers/xingliren/versions/3
+        # 建议加上官方 Node20 layer，虽然你可能没用到，但加上防呆
+        - acs:fc:cn-hangzhou:official:layers/Nodejs20/versions/3
+
+      # 【修正2】环境变量缩进必须正确！
       environmentVariables:
+        # 系统变量
         LD_LIBRARY_PATH: /code:/code/lib:/usr/lib:/opt/lib:/usr/local/lib
         NODE_PATH: /opt/nodejs/node_modules
         PATH: >-
           /var/fc/lang/nodejs20/bin:/usr/local/bin/apache-maven/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/ruby/bin:/opt/bin:/code:/code/bin
-      functionArn: acs:fc:cn-hangzhou:1128326595609724:functions/vip_server
-      functionName: vip_server
-      handler: index.handler
-      instanceConcurrency: 20
-      instanceIsolationMode: SHARE
-      internetAccess: true
-      layers:
-        - acs:fc:cn-hangzhou:1128326595609724:layers/xingliren/versions/3
+        
+        # --- 你的自定义变量 (注意前面的空格) ---
+        AIRSCRIPT_TOKEN: "1w52WxiFECf2W18lc8JuBY"
+        USER_AIR_URL: "https://www.kdocs.cn/api/v3/ide/file/476747012295/script/V2-5mub35JgI5al0gOuGTMJYN/sync_task"
+        TRAN_AIR_URL: "https://www.kdocs.cn/api/v3/ide/file/476747012295/script/V2-3qtGTp4QuqU0g1yX9xDNMU/sync_task"
+      
       logConfig:
         enableInstanceMetrics: true
         enableRequestMetrics: true
         logBeginRule: DefaultRegex
         logstore: default-logs
         project: serverless-cn-hangzhou-51f6d4d0-247d-58b1-9533-b93858a5dfc5
-      memorySize: 512
+      
       resourceGroupId: rg-acfmwjjzrpkai7a
       role: ''
-      runtime: custom.debian10
-      sessionAffinity: NONE
-      timeout: 60
+      
       vpcConfig:
         securityGroupId: sg-bp1gmt1v7v6e6sbtcxue
         vSwitchIds:
           - vsw-bp1jfx161dbcncad6kq7n
         vpcId: vpc-bp1dni5rgv0s42xc4c0rb
-      code: D:\s.tangmj.cn\vip_server\sync-clone\
+        
       triggers:
         - triggerName: defaultTrigger
           triggerType: http
@@ -62,5 +78,6 @@ resources:
               - HEAD
               - OPTIONS
               - PATCH
-            authType: function
+            # 【修正3】改成 anonymous 允许网页直接访问，否则会报权限错误
+            authType: anonymous
             disableURLInternet: false
