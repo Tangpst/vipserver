@@ -1,0 +1,65 @@
+edition: 3.0.0
+name: default
+access: default
+resources:
+  vip_server:
+    component: fc3
+    props:
+      region: cn-hangzhou
+      cpu: 0.35
+      customRuntimeConfig:
+        command:
+          - npm
+          - run
+          - start
+        port: 9000
+      description: ''
+      disableOndemand: false
+      diskSize: 512
+      environmentVariables:
+        LD_LIBRARY_PATH: /code:/code/lib:/usr/lib:/opt/lib:/usr/local/lib
+        NODE_PATH: /opt/nodejs/node_modules
+        PATH: >-
+          /var/fc/lang/nodejs20/bin:/usr/local/bin/apache-maven/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/ruby/bin:/opt/bin:/code:/code/bin
+      functionArn: acs:fc:cn-hangzhou:1128326595609724:functions/vip_server
+      functionName: vip_server
+      handler: index.handler
+      instanceConcurrency: 20
+      instanceIsolationMode: SHARE
+      internetAccess: true
+      layers:
+        - acs:fc:cn-hangzhou:official:layers/Nodejs20/versions/3
+      logConfig:
+        enableInstanceMetrics: true
+        enableRequestMetrics: true
+        logBeginRule: DefaultRegex
+        logstore: default-logs
+        project: serverless-cn-hangzhou-51f6d4d0-247d-58b1-9533-b93858a5dfc5
+      memorySize: 512
+      resourceGroupId: rg-acfmwjjzrpkai7a
+      role: ''
+      runtime: custom.debian10
+      sessionAffinity: NONE
+      timeout: 60
+      vpcConfig:
+        securityGroupId: sg-bp1gmt1v7v6e6sbtcxue
+        vSwitchIds:
+          - vsw-bp1jfx161dbcncad6kq7n
+        vpcId: vpc-bp1dni5rgv0s42xc4c0rb
+      code: D:\s.tangmj.cn\vip_server\sync-clone\cn-hangzhou_vip_server
+      triggers:
+        - triggerName: defaultTrigger
+          triggerType: http
+          description: ''
+          qualifier: LATEST
+          triggerConfig:
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - HEAD
+              - OPTIONS
+              - PATCH
+            authType: function
+            disableURLInternet: false
