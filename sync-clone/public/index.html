@@ -178,8 +178,17 @@
     </div>
 
     <script>
-        // 设置当前登录的测试手机号 (邀请人)
-        const CURRENT_PHONE = '13800000000';
+                // === 鉴权守卫 ===
+        const TOKEN = localStorage.getItem('auth_token');
+        const MY_PHONE = localStorage.getItem('user_phone'); // 登录时的手机号
+
+        if (!TOKEN || !MY_PHONE) {
+            window.location.href = 'login.html'; // 没登录，踢走
+        }
+        // ================
+
+        // 使用登录的手机号，不再硬编码
+        const CURRENT_PHONE = MY_PHONE;
 
         window.onload = function() {
             fetchData();

@@ -31,7 +31,7 @@ resources:
         port: 9000
 
       layers:
-        - acs:fc:cn-hangzhou:1128326595609724:layers/xingliren/versions/3
+        - acs:fc:cn-hangzhou:1128326595609724:layers/vip/versions/2
         # 建议加上官方 Node20 layer，虽然你可能没用到，但加上防呆
         - acs:fc:cn-hangzhou:official:layers/Nodejs20/versions/3
 
@@ -47,6 +47,13 @@ resources:
         AIRSCRIPT_TOKEN: "1w52WxiFECf2W18lc8JuBY"
         USER_AIR_URL: "https://www.kdocs.cn/api/v3/ide/file/476747012295/script/V2-5mub35JgI5al0gOuGTMJYN/sync_task"
         TRAN_AIR_URL: "https://www.kdocs.cn/api/v3/ide/file/476747012295/script/V2-3qtGTp4QuqU0g1yX9xDNMU/sync_task"
+        ALIBABA_CLOUD_ACCESS_KEY_ID : "LTAI5tAvFdJDQSb6Q7BskMVw"
+        ALIBABA_CLOUD_ACCESS_KEY_SECRET : "hzw8cG0TNgkaMFrqbEbEOkrUdb5qJG"
+        SMS_SIGN_NAME : "星丽仁"
+        SMS_TEMPLATE_CODE : "SMS_498940400"
+        JWT_SECRET: "sA0sZ5eQ7nO0uB0tV6sE5xF6xQ2qP0tN2lR"
+        # 开启测试模式，不发送真实短信
+        #MOCK_SMS_MODE: "true"
       
       logConfig:
         enableInstanceMetrics: true

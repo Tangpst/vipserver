@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #FDF7FF;
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Roboto', sans-serif;
+        }
+        .login-card {
+            background: white;
+            padding: 32px;
+            border-radius: 24px;
+            width: 80%;
+            max-width: 360px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        .app-logo {
+            width: 64px;
+            height: 64px;
+            background-color: #EADDFF;
+            color: #673AB7;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 24px;
+            font-size: 32px;
+            font-weight: bold;
+        }
+        h2 { margin-bottom: 8px; color: #1C1B1F; }
+        p { color: #79747E; font-size: 14px; margin-bottom: 24px; }
+
+        .input-group {
+            margin-bottom: 16px;
+            text-align: left;
+        }
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #E0E0E0;
+            border-radius: 12px;
+            box-sizing: border-box;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus { border-color: #673AB7; }
+
+        .code-row {
+            display: flex;
+            gap: 12px;
+        }
+        .code-btn {
+            background-color: #EADDFF;
+            color: #21005D;
+            border: none;
+            border-radius: 12px;
+            padding: 0 16px;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .code-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background-color: #673AB7;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .submit-btn:active { opacity: 0.9; }
+        
+        #msg { color: #D32F2F; font-size: 12px; margin-top: 12px; min-height: 16px; }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="app-logo">V</div>
+        <h2>欢迎回来</h2>
+        <p>请验证手机号以查看权益金</p>
+
+        <div class="input-group">
+            <input type="tel" id="phone" placeholder="请输入手机号" maxlength="11">
+        </div>
+
+        <div class="input-group code-row">
+            <input type="text" id="code" placeholder="验证码" maxlength="6">
+            <button class="code-btn" id="sendBtn" onclick="sendCode()">获取验证码</button>
+        </div>
+
+        <button class="submit-btn" onclick="login()">登录</button>
+        <div id="msg"></div>
+    </div>
+
+    <script>
+        async function sendCode() {
+            const phone = document.getElementById('phone').value;
+            if (phone.length !== 11) {
+                showMsg('请输入正确的手机号');
+                return;
+            }
+
+            const btn = document.getElementById('sendBtn');
+            btn.disabled = true;
+            btn.innerText = '发送中...';
+
+            try {
+                const res = await fetch('/api/send-code', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ phone })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    showMsg(data.msg, 'green');
+                    // 倒计时
+                    let count = 60;
+                    const timer = setInterval(() => {
+                        count--;
+                        btn.innerText = `${count}s`;
+                        if (count <= 0) {
+                            clearInterval(timer);
+                            btn.disabled = false;
+                            btn.innerText = '获取验证码';
+                        }
+                    }, 1000);
+                    
+                    // 【调试用】如果是测试模式，自动填入验证码
+                    if(data.mockCode) {
+                        alert(`【测试模式】验证码是：${data.mockCode}`);
+                        document.getElementById('code').value = data.mockCode;
+                    }
+
+                } else {
+                    showMsg(data.error);
+                    btn.disabled = false;
+                    btn.innerText = '获取验证码';
+                }
+            } catch (e) {
+                showMsg('网络错误');
+                btn.disabled = false;
+                btn.innerText = '获取验证码';
+            }
+        }
+
+        async function login() {
+            const phone = document.getElementById('phone').value;
+            const code = document.getElementById('code').value;
+
+            if (!phone || !code) {
+                showMsg('请填写完整');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ phone, code })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    // 【核心】保存 Token 和 手机号
+                    localStorage.setItem('auth_token', data.token);
+                    localStorage.setItem('user_phone', data.phone);
+                    
+                    showMsg('登录成功！跳转中...', 'green');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                } else {
+                    showMsg(data.error);
+                }
+            } catch (e) {
+                showMsg('登录请求失败');
+            }
+        }
+
+        function showMsg(text, color = '#D32F2F') {
+            const el = document.getElementById('msg');
+            el.style.color = color;
+            el.innerText = text;
+        }
+    </script>
+</body>
+</html>
