@@ -200,7 +200,12 @@
 
         async function fetchData() {
             try {
-                const res = await fetch(`/api/user-info?phone=${CURRENT_PHONE}`);
+                // 修改 fetch 的部分
+                const res = await fetch(`/api/user-info?phone=${CURRENT_PHONE}`, {
+                    headers: {
+                        'Authorization': `Bearer ${TOKEN}` // 【关键】带上 Token
+                    }
+                });
                 const json = await res.json();
                 console.log('前端收到数据:', json);
 
